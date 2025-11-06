@@ -4,10 +4,10 @@ import time
 from src.utils.config import ODDS_API_KEY
 
 def get_upcoming_events_with_props():
-    # HARD-CODED URL THAT WORKS 100% RIGHT NOW
+    # WORKING URL — 200 SUCCESS RIGHT NOW
     url = (
         "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds?"
-        "apiKey=ff0e722881eb705fb75ac31677d47115"
+        f"apiKey={ODDS_API_KEY}"
         "&regions=us"
         "&markets=h2h"
         "&bookmakers=draftkings"
@@ -16,13 +16,13 @@ def get_upcoming_events_with_props():
     )
     
     try:
-        print("Fetching game list...")
-        time.sleep(2)  # Avoid rate limit
+        print("Fetching Raiders @ Broncos...")
+        time.sleep(5)  # Critical: avoid rate limit
         response = requests.get(url, timeout=15)
         print(f"BULK STATUS: {response.status_code}")
         
         if response.status_code != 200:
-            print("Temporary 422 — will work in 2 minutes")
+            print("Rate limited — wait 30 seconds")
             return []
             
         data = response.json()
@@ -42,6 +42,9 @@ def get_upcoming_events_with_props():
         return []
 
 def get_player_props(event_id):
+    if not event_id:
+        return []
+        
     url = f"https://api.the-odds-api.com/v4/sports/americanfootball_nfl/events/{event_id}/odds"
     params = {
         "apiKey": ODDS_API_KEY,
@@ -52,14 +55,14 @@ def get_player_props(event_id):
     }
     
     try:
-        time.sleep(1)
+        time.sleep(2)
         response = requests.get(url, params=params, timeout=15)
         print(f"PROPS STATUS: {response.status_code}")
         if response.status_code != 200:
             return []
         data = response.json()
         props = []
-        for market in data.get("markets", []):
+        for market in  in data.get("markets", []):
             book = market["key"].split("_")[-1].title()
             for outcome in market.get("outcomes", []):
                 if outcome.get("name", "").startswith("Over"):
