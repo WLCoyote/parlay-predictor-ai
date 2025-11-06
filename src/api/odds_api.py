@@ -4,7 +4,6 @@ import time
 from src.utils.config import ODDS_API_KEY
 
 def get_upcoming_events_with_props():
-    # WORKING URL — 200 SUCCESS RIGHT NOW
     url = (
         "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds?"
         f"apiKey={ODDS_API_KEY}"
@@ -17,7 +16,7 @@ def get_upcoming_events_with_props():
     
     try:
         print("Fetching Raiders @ Broncos...")
-        time.sleep(5)  # Critical: avoid rate limit
+        time.sleep(5)
         response = requests.get(url, timeout=15)
         print(f"BULK STATUS: {response.status_code}")
         
@@ -62,7 +61,7 @@ def get_player_props(event_id):
             return []
         data = response.json()
         props = []
-        for market in  in data.get("markets", []):
+        for market in data.get("markets", []):
             book = market["key"].split("_")[-1].title()
             for outcome in market.get("outcomes", []):
                 if outcome.get("name", "").startswith("Over"):
