@@ -3,7 +3,7 @@ import requests
 import time
 from src.utils.config import ODDS_API_KEY
 
-# REAL EVENT ID FOR TONIGHT'S GAME (Raiders @ Broncos)
+# REAL EVENT ID FOR Raiders @ Broncos TNF (Nov 6, 2025)
 TNF_EVENT_ID = "13bdffda97e8fb13179fe3f2f69d66f8"
 
 def get_upcoming_events_with_props():
@@ -19,14 +19,13 @@ def get_player_props(event_id=TNF_EVENT_ID):
     params = {
         "apiKey": ODDS_API_KEY,
         "regions": "us",
-        "markets": "player_pass_yds",   # ONE MARKET ONLY
+        "markets": "player_pass_yds",  # Passing yards (real, live right now)
         "oddsFormat": "american",
-        "bookmakers": "draftkings"      # ONE BOOK ONLY
+        "bookmakers": "draftkings"
     }
     
     try:
-        print("Pulling real passing props...")
-        time.sleep(5)
+        time.sleep(3)
         response = requests.get(url, params=params, timeout=20)
         print(f"PROPS STATUS: {response.status_code}")
         if response.status_code != 200:
