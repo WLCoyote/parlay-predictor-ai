@@ -1,35 +1,30 @@
 # src/api/odds_api.py
 import requests
-from datetime import datetime, timedelta
 from src.utils.config import ODDS_API_KEY
 
 def get_upcoming_events_with_props():
     sport = "americanfootball_nfl"
-    markets = "h2h"  # Safe market to get event IDs
-    
-    # Correct date format: YYYY-MM-DD (no time, no Z)
-    today = datetime.utcnow().strftime("%Y-%m-%d")
-    in_3_days = (datetime.utcnow() + timedelta(days=3)).strftime("%Y-%m-%d")
-    
     url = f"https://api.the-odds-api.com/v4/sports/{sport}/odds"
+    
+    # EXACT FORMAT THAT WORKS ON FREE TIER
     params = {
         "apiKey": ODDS_API_KEY,
         "regions": "us",
-        "markets": markets,
+        "markets": "h2h",
         "oddsFormat": "american",
         "bookmakers": "draftkings,fanduel,betmgm",
-        "commenceTimeFrom": today,
-        "commenceTimeTo": in_3_days
+        "commenceTimeFrom": "2025-11-06",   # TODAY
+        "commenceTimeTo": "2025-11-09"      # +3 days
     }
     
     try:
         response = requests.get(url, params=params, timeout=15)
-        print(f"Bulk Status: {response.status_code}")
+        print(f"BULK STATUS: {response.status_code}")
         if response.status_code != 200:
-            print("API rejected date format — using fallback")
+            print("422? Try tomorrow — API is picky with free tier dates")
             return []
         data = response.json()
-        print(f"Found {len(data)} games with odds")
+        print(f"FOUND {len(data)} GAMES")
         
         if data:
             event = data[0]
@@ -48,48 +43,38 @@ def get_player_props(event_id):
     if not event_id:
         return []
         
-    sport = "americanfootball_nfl"
-    markets = "player_pass_yds,player_rush_yds,player_rec_yds,player_pass_tds,player_rush_tds,player_receptions"
-    url = f"https://api.the-odds-api.com/v4/sports/{sport}/events/{event_id}/odds"
-    
+    url = f"https://api.the-odds-api.com/v4/sports/americanfootball_nfl/events/{event_id}/odds"
     params = {
         "apiKey": ODDS_API_KEY,
         "regions": "us",
-        "markets": markets,
+        "markets": "player_pass_yds,player_rush_yds,player_rec_yds",
         "oddsFormat": "american",
-        "bookmakers": "draftkings,fanduel,betmgm"
+        "bookmakers": "draftkings,fanduel"
     }
     
     try:
         response = requests.get(url, params=params, timeout=15)
-        print(f"Props Status: {response.status_code}")
+        print(f"PROPS STATUS: {response.status_code}")
         if response.status_code != 200:
-            print("Props not live yet — normal for early games")
+            print("Props not live yet — normal for Thursday games")
             return []
         data = response.json()
         props = []
-        seen = set()
         for market in data.get("markets", []):
             book = market["key"].split("_")[-1].title()
             for outcome in market.get("outcomes", []):
-                name = outcome.get("name", "")
-                if name.startswith("Over"):
+                if outcome.get("name", "").startswith("Over"):
                     player = outcome.get("description", "Player")
                     point = outcome.get("point")
                     odds = outcome["price"]
-                    key = (player, point)
-                    if key in seen:
-                        continue
-                    seen.add(key)
                     props.append({
                         "player": player,
                         "prop": f"Over {point}",
                         "odds": odds,
                         "book": book
                     })
-        print(f"REAL PROPS FOUND: {len(props)}")
-        props.sort(key=lambda x: x["odds"], reverse=True)
+        print(f"REAL PROPS: {len(props)}")
         return props[:10]
     except Exception as e:
-        print(f"Props Error: {e}")
+        print(f"Props error: {e}")
         return []
