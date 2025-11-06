@@ -27,7 +27,6 @@ def get_upcoming_events_with_props():
         data = response.json()
         print(f"Games found: {len(data)}")
         
-        # Return first game with odds
         if data:
             event = data[0]
             return [{
@@ -42,6 +41,9 @@ def get_upcoming_events_with_props():
         return []
 
 def get_player_props(event_id):
+    if not event_id:
+        return []  # No mock — real only
+    
     sport = "americanfootball_nfl"
     markets = "player_pass_yds,player_rush_yds,player_rec_yds,player_pass_tds,player_rush_tds,player_receptions"
     url = f"https://api.the-odds-api.com/v4/sports/{sport}/events/{event_id}/odds"
@@ -57,7 +59,7 @@ def get_player_props(event_id):
         response = requests.get(url, params=params, timeout=15)
         print(f"Props Status: {response.status_code}")
         if response.status_code == 404 or response.status_code == 422:
-            print("No props posted yet for this game — normal for >24h pre-kickoff")
+            print("No props posted yet — normal for early games")
             return []
         response.raise_for_status()
         data = response.json()
@@ -72,7 +74,7 @@ def get_player_props(event_id):
                     player = outcome.get("description", "Player")
                     point = outcome.get("point")
                     odds = outcome["price"]
-                    key = (player,  , point)
+                    key = (player, point)  # ← FIXED: removed double comma
                     if key in seen:
                         continue
                     seen.add(key)
