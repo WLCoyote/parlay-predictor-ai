@@ -6,22 +6,22 @@ def get_upcoming_events_with_props():
     sport = "americanfootball_nfl"
     url = f"https://api.the-odds-api.com/v4/sports/{sport}/odds"
     
-    # EXACT FORMAT THAT WORKS ON FREE TIER
+    # THIS IS THE ONLY FORMAT THAT WORKS TODAY
     params = {
         "apiKey": ODDS_API_KEY,
         "regions": "us",
         "markets": "h2h",
         "oddsFormat": "american",
-        "bookmakers": "draftkings,fanduel,betmgm",
-        "commenceTimeFrom": "2025-11-06",   # TODAY
-        "commenceTimeTo": "2025-11-09"      # +3 days
+        "bookmakers": "draftkings,fanduel",
+        "commenceTimeFrom": "2025-11-06",
+        "commenceTimeTo": "2025-11-07"
     }
     
     try:
         response = requests.get(url, params=params, timeout=15)
         print(f"BULK STATUS: {response.status_code}")
         if response.status_code != 200:
-            print("422? Try tomorrow — API is picky with free tier dates")
+            print("API being strict — try in 5 minutes")
             return []
         data = response.json()
         print(f"FOUND {len(data)} GAMES")
@@ -56,7 +56,6 @@ def get_player_props(event_id):
         response = requests.get(url, params=params, timeout=15)
         print(f"PROPS STATUS: {response.status_code}")
         if response.status_code != 200:
-            print("Props not live yet — normal for Thursday games")
             return []
         data = response.json()
         props = []
@@ -76,5 +75,5 @@ def get_player_props(event_id):
         print(f"REAL PROPS: {len(props)}")
         return props[:10]
     except Exception as e:
-        print(f"Props error: {e}")
+        print(f"Error: {e}")
         return []
