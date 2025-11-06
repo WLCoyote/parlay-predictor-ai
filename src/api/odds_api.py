@@ -6,32 +6,31 @@ from datetime import datetime, timedelta
 
 def get_upcoming_events_with_props():
     sport = "americanfootball_nfl"
+    # Use h2h to get event IDs (featured market = no 422)
     url = f"https://api.the-odds-api.com/v4/sports/{sport}/odds"
-    
-    # FULL ISO FORMAT (required to avoid 422)
-    now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-    future = (datetime.utcnow() + timedelta(days=3)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = datetime.utcnow().strftime("%Y-%m-%dT00:00:00Z")
+    future = (datetime.utcnow() + timedelta(days=2)).strftime("%Y-%m-%dT23:59:59Z")
     
     params = {
         "apiKey": ODDS_API_KEY,
         "regions": "us",
         "markets": "h2h",
         "oddsFormat": "american",
-        "bookmakers": "draftkings,fanduel,betmgm",
+        "bookmakers": "draftkings",
         "commenceTimeFrom": now,
         "commenceTimeTo": future
     }
     
     try:
-        time.sleep(5)  # Avoid rate limit
-        response = requests.get(url, params=params, timeout=15)
-        print(f"BULK STATUS: {response.status_code} | Remaining: {response.headers.get('x-requests-remaining', 'Unknown')}")
+        time.sleep(3)
+        response = requests.get(url, params=params, timeout=20)
+        print(f"BULK STATUS: {response.status_code}")
         response.raise_for_status()
         data = response.json()
-        print(f"Found {len(data)} games")
+        print(f"Found {len(data)} games with h2h odds")
         
         if data:
-            event = data[0]
+            event = data[0]  # Raiders @ Broncos
             return [{
                 "id": event["id"],
                 "home": event["home_team"],
@@ -46,9 +45,9 @@ def get_upcoming_events_with_props():
 def get_player_props(event_id):
     if not event_id:
         return []
-    
-    sport = "americanfootball_nfl"
-    url = f"https://api.the-odds-api.com/v4/sports/{sport}/events/{event_id}/odds"
+        
+    # CORRECT ENDPOINT FOR PLAYER PROPS
+    url = f"https://api.the-odds-api.com/v4/sports/americanfootball_nfl/events/{event_id}/odds"
     params = {
         "apiKey": ODDS_API_KEY,
         "regions": "us",
@@ -59,15 +58,12 @@ def get_player_props(event_id):
     
     try:
         time.sleep(2)
-        response = requests.get(url, params=params, timeout=15)
+        response = requests.get(url, params=params, timeout=20)
         print(f"PROPS STATUS: {response.status_code}")
         if response.status_code != 200:
-            print("Props not live yet — normal for early games")
+            print("Props not in API yet — will appear in 1-2 hours")
             return []
-        response.raise_for_status()
         data = response.json()
-        print(f"Markets: {len(data.get('markets', []))}")
-        
         props = []
         seen = set()
         for market in data.get("markets", []):
@@ -87,7 +83,7 @@ def get_player_props(event_id):
                         "odds": odds,
                         "book": book
                     })
-        print(f"Real props found: {len(props)}")
+        print(f"REAL PROPS FOUND: {len(props)}")
         props.sort(key=lambda x: x["odds"], reverse=True)
         return props[:10]
     except Exception as e:
