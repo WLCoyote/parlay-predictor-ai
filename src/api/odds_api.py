@@ -3,7 +3,6 @@ import requests
 import time
 from src.utils.config import ODDS_API_KEY
 
-# REAL EVENT ID FOR Raiders @ Broncos TNF (Nov 6, 2025)
 TNF_EVENT_ID = "13bdffda97e8fb13179fe3f2f69d66f8"
 
 def get_upcoming_events_with_props():
@@ -19,9 +18,9 @@ def get_player_props(event_id=TNF_EVENT_ID):
     params = {
         "apiKey": ODDS_API_KEY,
         "regions": "us",
-        "markets": "player_pass_yds",  # Passing yards (real, live right now)
+        "markets": "player_pass_yds,player_rush_yds,player_rec_yds",
         "oddsFormat": "american",
-        "bookmakers": "draftkings"
+        "bookmakers": "draftkings"  # ONE BOOK ONLY — THIS IS THE FIX
     }
     
     try:
@@ -40,12 +39,12 @@ def get_player_props(event_id=TNF_EVENT_ID):
                     odds = outcome.get("price")
                     props.append({
                         "player": player,
-                        "prop": f"Over {point} passing yds",
+                        "prop": f"Over {point}",
                         "odds": odds,
                         "book": "DraftKings"
                     })
-        print(f"REAL PASSING PROPS FOUND: {len(props)}")
-        return props[:10]
+        print(f"REAL PROPS FOUND: {len(props)}")
+        return props[:15]
     except Exception as e:
         print(f"Error: {e}")
         return []
