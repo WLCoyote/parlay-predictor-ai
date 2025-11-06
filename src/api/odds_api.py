@@ -30,7 +30,6 @@ def get_upcoming_events_with_props():
         
         if data:
             event = data[0]
-            print(f"Event ID: {event['id']}")
             return [{
                 "id": event["id"],
                 "home": event["home_team"],
@@ -51,9 +50,9 @@ def get_player_props(event_id):
     params = {
         "apiKey": ODDS_API_KEY,
         "regions": "us",
-        "markets": "player_pass_yds,player_rush_yds",  # 2 markets only (free tier safe)
+        "markets": "player_pass_yds,player_rush_yds,player_rec_yds",  # 3 markets = 30 credits (safe)
         "oddsFormat": "american",
-        "bookmakers": "draftkings"  # 1 book only (free tier safe)
+        "bookmakers": "draftkings,fanduel"
     }
     
     try:
@@ -61,16 +60,15 @@ def get_player_props(event_id):
         response = requests.get(url, params=params, timeout=20)
         print(f"PROPS STATUS: {response.status_code}")
         if response.status_code != 200:
-            print("Props not synced yet — try at 10 AM PST")
+            print("Props syncing — refresh in 30 min")
             return []
-        response.raise_for_status()
         data = response.json()
         print(f"Markets: {len(data.get('markets', []))}")
         
         props = []
         seen = set()
         for market in data.get("markets", []):
-            book = "DraftKings"
+            book = market["key"].split("_")[-1].title()
             for outcome in market.get("outcomes", []):
                 if outcome.get("name", "").startswith("Over"):
                     player = outcome.get("description", "Player")
@@ -86,7 +84,7 @@ def get_player_props(event_id):
                         "odds": odds,
                         "book": book
                     })
-        print(f"Real props found: {len(props)}")
+        print(f"REAL PROPS FOUND: {len(props)}")
         props.sort(key=lambda x: x["odds"], reverse=True)
         return props[:10]
     except Exception as e:
