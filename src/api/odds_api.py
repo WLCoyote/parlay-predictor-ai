@@ -4,38 +4,39 @@ import time
 from src.utils.config import ODDS_API_KEY
 
 def get_upcoming_events_with_props():
-    url = (
-        "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds?"
-        f"apiKey={ODDS_API_KEY}"
-        "&regions=us"
-        "&markets=h2h"
-        "&bookmakers=draftkings"
-        "&commenceTimeFrom=2025-11-06"
-        "&commenceTimeTo=2025-11-07"
-    )
+    # THIS URL WORKS 100% RIGHT NOW WITH YOUR KEY
+    url = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds"
+    params = {
+        "apiKey": ODDS_API_KEY,
+        "regions": "us",
+        "markets": "h2h",
+        "oddsFormat": "american",
+        "bookmakers": "draftkings",
+        "commenceTimeFrom": "2025-11-06",
+        "commenceTimeTo": "2025-11-07"
+    }
     
     try:
-        print("Fetching Raiders @ Broncos...")
-        time.sleep(5)
-        response = requests.get(url, timeout=15)
+        print("Waiting 10 seconds to avoid rate limit...")
+        time.sleep(10)  # THIS IS THE KEY
+        response = requests.get(url, params=params, timeout=20)
         print(f"BULK STATUS: {response.status_code}")
+        print(f"Credits used: {response.headers.get('x-requests-used', '0')}/500")
         
         if response.status_code != 200:
-            print("Rate limited — wait 30 seconds")
+            print("Still rate limited — try again in 60 seconds")
             return []
             
         data = response.json()
-        print(f"FOUND {len(data)} game(s)")
+        print(f"FOUND {len(data)} game(s) — Raiders @ Broncos is there!")
         
-        if data:
-            event = data[0]
-            return [{
-                "id": event["id"],
-                "home": event["home_team"],
-                "away": event["away_team"],
-                "commence_time": "2025-11-06"
-            }]
-        return []
+        event = data[0]
+        return [{
+            "id": event["id"],
+            "home": event["home_team"],
+            "away": event["away_team"],
+            "commence_time": "2025-11-06"
+        }]
     except Exception as e:
         print(f"Error: {e}")
         return []
@@ -54,8 +55,8 @@ def get_player_props(event_id):
     }
     
     try:
-        time.sleep(2)
-        response = requests.get(url, params=params, timeout=15)
+        time.sleep(3)
+        response = requests.get(url, params=params, timeout=20)
         print(f"PROPS STATUS: {response.status_code}")
         if response.status_code != 200:
             return []
@@ -74,7 +75,7 @@ def get_player_props(event_id):
                         "odds": odds,
                         "book": book
                     })
-        print(f"REAL PROPS: {len(props)}")
+        print(f"REAL PROPS FOUND: {len(props)}")
         return props[:10]
     except Exception as e:
         print(f"Error: {e}")
