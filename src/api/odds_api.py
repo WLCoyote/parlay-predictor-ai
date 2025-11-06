@@ -18,9 +18,9 @@ def get_player_props(event_id=TNF_EVENT_ID):
     params = {
         "apiKey": ODDS_API_KEY,
         "regions": "us",
-        "markets": "player_pass_yds,player_rush_yds,player_rec_yds",
+        "markets": "player_pass_yds",  # 1 market only
         "oddsFormat": "american",
-        "bookmakers": "draftkings"  # ONE BOOK ONLY — THIS IS THE FIX
+        "bookmakers": "draftkings"     # 1 book only
     }
     
     try:
@@ -39,12 +39,12 @@ def get_player_props(event_id=TNF_EVENT_ID):
                     odds = outcome.get("price")
                     props.append({
                         "player": player,
-                        "prop": f"Over {point}",
+                        "prop": f"Over {point} passing yds",
                         "odds": odds,
                         "book": "DraftKings"
                     })
-        print(f"REAL PROPS FOUND: {len(props)}")
-        return props[:15]
+        print(f"REAL PASSING PROPS FOUND: {len(props)}")
+        return props[:10]
     except Exception as e:
         print(f"Error: {e}")
         return []
