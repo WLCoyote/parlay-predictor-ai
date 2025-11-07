@@ -12,7 +12,7 @@ def get_upcoming_games():
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         games = response.json()
-        # Fixed: Handle null DateTime
+        # Fixed: Week 10, Sunday (Nov 10, 2024), scheduled
         week10_sunday = [
             g for g in games 
             if g.get("Week") == 10 
