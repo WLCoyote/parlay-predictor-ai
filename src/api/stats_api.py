@@ -12,8 +12,14 @@ def get_upcoming_games():
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         games = response.json()
-        # Filter for Week 10, Sunday (Nov 9, 2025), scheduled games
-        week10_sunday = [g for g in games if g["Week"] == 10 and "2025-11-09" in g["DateTime"] and g["Status"] == "Scheduled"]
+        # Fixed: Use .get() to avoid NoneType
+        week10_sunday = [
+            g for g in games 
+            if g.get("Week") == 10 
+            and g.get("DateTime", "").startswith("2025-11-09")
+            and g.get("Status") == "Scheduled"
+        ]
+        print(f"Found {len(week10_sunday)} Week 10 Sunday games")
         return week10_sunday
     except Exception as e:
         print(f"Stats API Error: {e}")
@@ -29,7 +35,7 @@ def get_player_props(game_key):
     
     try:
         response = requests.get(url, headers=headers)
-        print(f"PROPS STATUS: {response.status_code}")
+        print(f"PROPS STATUS: {response.status_code} for GameKey {game_key}")
         if response.status_code != 200:
             return []
         data = response.json()
