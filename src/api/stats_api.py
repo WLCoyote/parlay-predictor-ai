@@ -19,11 +19,11 @@ def get_upcoming_games():
         return []
 
 def get_player_props(game_key):
-    """Fetch REAL player props from SportsDataIO"""
+    """Fetch REAL prop odds from SportsDataIO"""
     if not game_key:
         return []
     
-    url = f"{BASE_URL}/projections/json/PlayerProps/{game_key}"
+    url = f"{BASE_URL}/odds/json/GameProps/{game_key}"
     headers = {"Ocp-Apim-Subscription-Key": SPORTSDATAIO_KEY}
     
     try:
@@ -33,32 +33,21 @@ def get_player_props(game_key):
             return []
         data = response.json()
         props = []
-        for player in data:
-            # Passing
-            if player.get("ProjectedPassingYards"):
+        for prop in data:
+            player = prop.get("PlayerName")
+            prop_type = prop.get("PropType")  # e.g., "PassingYards"
+            line = prop.get("OverUnder")  # the line
+            over_odds = prop.get("OverUnderOdds")
+            book = "DraftKings"  # Default for MVP
+            if player and line and over_odds:
+                prop_text = f"{prop_type} Over {line}"
                 props.append({
-                    "player": player["Name"],
-                    "prop": f"Over {player['ProjectedPassingYards']} passing yds",
-                    "odds": -110,
-                    "book": "DraftKings"
+                    "player": player,
+                    "prop": prop_text,
+                    "odds": over_odds,
+                    "book": book
                 })
-            # Rushing
-            if player.get("ProjectedRushingYards"):
-                props.append({
-                    "player": player["Name"],
-                    "prop": f"Over {player['ProjectedRushingYards']} rushing yds",
-                    "odds": -115,
-                    "book": "DraftKings"
-                })
-            # Receiving
-            if player.get("ProjectedReceivingYards"):
-                props.append({
-                    "player": player["Name"],
-                    "prop": f"Over {player['ProjectedReceivingYards']} receiving yds",
-                    "odds": +105,
-                    "book": "DraftKings"
-                })
-        print(f"REAL PROPS FOUND: {len(props)}")
+        print(f"REAL PROP ODDS FOUND: {len(props)}")
         return props[:10]
     except Exception as e:
         print(f"Props Error: {e}")
