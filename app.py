@@ -16,7 +16,8 @@ if st.button("GENERATE LIVE PARLAYS", type="primary", use_container_width=True):
         else:
             for game in games:
                 st.subheader(f"**{game['AwayTeam']} @ {game['HomeTeam']}**")
-                st.write(f"Kickoff: {game['DateTime']} • Line: {game['PointSpread']} | O/U {game['OverUnder']}")
+                st.write(f"Kickoff: {game['DateTime']} (5:15 PM PT / 8:15 PM ET for IND @ ATL)")
+                st.write(f"Line: {game.get('PointSpread', 'TBD')} | O/U {game.get('OverUnder', 'TBD')}")
                 
                 props = get_player_props(game["GameKey"])
                 if props:

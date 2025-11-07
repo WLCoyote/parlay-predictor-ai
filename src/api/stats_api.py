@@ -12,7 +12,7 @@ def get_upcoming_games():
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         games = response.json()
-        # Fixed: Use .get() to avoid NoneType
+        # Fixed filter: Week 10, Sunday (Nov 9, 2025), scheduled
         week10_sunday = [
             g for g in games 
             if g.get("Week") == 10 
@@ -26,7 +26,7 @@ def get_upcoming_games():
         return []
 
 def get_player_props(game_key):
-    """Fetch REAL player props from SportsDataIO"""
+    """Fetch REAL player prop odds from SportsDataIO"""
     if not game_key:
         return []
     
