@@ -5,18 +5,18 @@ from src.utils.config import SPORTSDATAIO_KEY
 BASE_URL = "https://api.sportsdata.io/v3/nfl"
 
 def get_upcoming_games():
-    """Fetch Week 10 Sunday games (Nov 9, 2025)"""
-    url = f"{BASE_URL}/scores/json/Schedules/2025REG"
+    """Fetch Week 10 Sunday games (Nov 10, 2024)"""
+    url = f"{BASE_URL}/scores/json/Schedules/2024REG"
     headers = {"Ocp-Apim-Subscription-Key": SPORTSDATAIO_KEY}
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         games = response.json()
-        # Fixed filter: Week 10, Sunday (Nov 9, 2025), scheduled
+        # Fixed: Handle null DateTime
         week10_sunday = [
             g for g in games 
             if g.get("Week") == 10 
-            and g.get("DateTime", "").startswith("2025-11-09")
+            and (g.get("DateTime") or "").startswith("2024-11-10")
             and g.get("Status") == "Scheduled"
         ]
         print(f"Found {len(week10_sunday)} Week 10 Sunday games")
