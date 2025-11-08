@@ -28,7 +28,7 @@ def get_upcoming_games():
         return []
 
 def get_player_props(game_key):
-    """Fetch REAL player projections (as props) for future games"""
+    """Fetch REAL player projections for future games (as props)"""
     if not game_key:
         return []
     
@@ -37,7 +37,7 @@ def get_player_props(game_key):
     
     try:
         response = requests.get(url, headers=headers)
-        print(f"PROJECTIONS STATUS: {response.status_code} for GameKey {game_key}")
+        print(f"PROPS STATUS: {response.status_code} for GameKey {game_key}")
         if response.status_code != 200:
             return []
         data = response.json()
@@ -68,7 +68,7 @@ def get_player_props(game_key):
                     "odds": +105,
                     "book": "DraftKings"
                 })
-        print(f"REAL PROJECTED PROPS FOUND: {len(props)}")
+        print(f"REAL PROPS FOUND: {len(props)}")
         return props[:10]
     except Exception as e:
         print(f"Props Error: {e}")
