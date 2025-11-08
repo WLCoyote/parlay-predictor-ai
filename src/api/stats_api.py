@@ -28,7 +28,7 @@ def get_upcoming_games():
         return []
 
 def get_player_props(game_key):
-    """Fetch REAL player projections for future games (as props)"""
+    """Fetch REAL player projections (as props) for future games"""
     if not game_key:
         return []
     
@@ -37,34 +37,38 @@ def get_player_props(game_key):
     
     try:
         response = requests.get(url, headers=headers)
-        print(f"PROPS STATUS: {response.status_code} for GameKey {game_key}")
+        print(f"PROJECTIONS STATUS: {response.status_code} for GameKey {game_key}")
         if response.status_code != 200:
             return []
         data = response.json()
         props = []
         for player in data:
+            name = player["Name"]
+            # Passing
             if player.get("ProjectedPassingYards"):
                 props.append({
-                    "player": player["Name"],
+                    "player": name,
                     "prop": f"Over {player['ProjectedPassingYards']} passing yds",
                     "odds": -110,
                     "book": "DraftKings"
                 })
+            # Rushing
             if player.get("ProjectedRushingYards"):
                 props.append({
-                    "player": player["Name"],
+                    "player": name,
                     "prop": f"Over {player['ProjectedRushingYards']} rushing yds",
                     "odds": -115,
                     "book": "DraftKings"
                 })
+            # Receiving
             if player.get("ProjectedReceivingYards"):
                 props.append({
-                    "player": player["Name"],
+                    "player": name,
                     "prop": f"Over {player['ProjectedReceivingYards']} receiving yds",
                     "odds": +105,
                     "book": "DraftKings"
                 })
-        print(f"REAL PROPS FOUND: {len(props)}")
+        print(f"REAL PROJECTED PROPS FOUND: {len(props)}")
         return props[:10]
     except Exception as e:
         print(f"Props Error: {e}")
@@ -80,7 +84,7 @@ def load_historical_data():
     return []
 
 def save_historical_data():
-    """Pull and cache historical stats (run once)"""
+    """Pull and cache 2024 historical stats (run once)"""
     url = f"{BASE_URL}/stats/json/PlayerSeasonStats/2024"
     headers = {"Ocp-Apim-Subscription-Key": SPORTSDATAIO_KEY}
     try:
