@@ -1,6 +1,8 @@
 # app.py
 import streamlit as st
-from src.api.stats_api import get_upcoming_games, get_player_props, load_historical_data, save_historical_data
+from datetime import datetime
+from zoneinfo import ZoneInfo
+from src.api.stats_api import get_upcoming_games, get_player_props, load_historical_data
 
 st.set_page_config(page_title="Parlay Predictor AI", layout="wide")
 st.title("PARLAY PREDICTOR AI")
@@ -18,8 +20,13 @@ if st.button("GENERATE LIVE PARLAYS", type="primary", use_container_width=True):
             st.error("No Week 10 Sunday games found — check SportsDataIO key")
         else:
             for game in games:
+                # Parse UTC time
+                utc_time = datetime.fromisoformat(game["DateTime"].replace("Z", "+00:00"))
+                pt_time = utc_time.astimezone(ZoneInfo("America/Los_Angeles"))
+                et_time = utc_time.astimezone(ZoneInfo("America/New_York"))
+                
                 st.subheader(f"**{game['AwayTeam']} @ {game['HomeTeam']}**")
-                st.write(f"Kickoff: {game['DateTime']} (5:15 PM PT / 8:15 PM ET)")
+                st.write(f"Kickoff: {game['DateTime']} UTC → **{pt_time.strftime('%-I:%M %p PT')} / {et_time.strftime('%-I:%M %p ET')}**")
                 st.write(f"Line: {game.get('PointSpread', 'TBD')} | O/U {game.get('OverUnder', 'TBD')}")
                 
                 props = get_player_props(game["GameKey"])
@@ -28,11 +35,7 @@ if st.button("GENERATE LIVE PARLAYS", type="primary", use_container_width=True):
                     for p in props:
                         st.write(f"• **{p['player']}** — {p['prop']} @ **{p['odds']}** ({p['book']})")
                 else:
-                    st.info("Props syncing — refresh in 30 min")
-
-if st.button("REFRESH HISTORICAL DATA (ONCE PER SEASON)"):
-    with st.spinner("Pulling 2024 historical stats..."):
-        save_historical_data()
+                    st.info("Real odds appear 24-36 hours before kickoff — refresh tomorrow")
 
 if historical_stats:
     st.subheader("Historical Player Stats (For ML Training)")
