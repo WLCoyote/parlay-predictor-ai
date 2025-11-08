@@ -1,18 +1,18 @@
 # app.py
 import streamlit as st
-from src.api.stats_api import get_upcoming_games, get_player_props, get_historical_player_stats, get_live_player_props
+from src.api.stats_api import get_upcoming_games, get_player_props, get_historical_player_stats
 
 st.set_page_config(page_title="Parlay Predictor AI", layout="wide")
 st.title("PARLAY PREDICTOR AI")
-st.caption("Week 10 All Games • Nov 6-10, 2025")
+st.caption("Week 10 Sunday Games • Nov 9, 2025")
 
 st.warning("For entertainment only. 18+. Gamble responsibly.")
 
 if st.button("GENERATE LIVE PARLAYS", type="primary", use_container_width=True):
-    with st.spinner("Pulling Week 10 props..."):
+    with st.spinner("Pulling Week 10 Sunday props..."):
         games = get_upcoming_games()
         if not games:
-            st.error("No Week 10 games found — check SportsDataIO key")
+            st.error("No Week 10 Sunday games found — check SportsDataIO key")
         else:
             for game in games:
                 st.subheader(f"**{game['AwayTeam']} @ {game['HomeTeam']}**")
@@ -28,26 +28,11 @@ if st.button("GENERATE LIVE PARLAYS", type="primary", use_container_width=True):
                     st.info("Props syncing — refresh in 30 min")
 
 if st.button("LOAD HISTORICAL DATA FOR ML"):
-    with st.spinner("Pulling 2024 historical stats for training..."):
+    with st.spinner("Pulling 2024 historical stats..."):
         stats = get_historical_player_stats()
         if stats:
             st.subheader("Historical Player Stats (For ML Training)")
             for s in stats:
-                st.write(f"• **{s['player']}** — Avg Passing: {s['passing_yards_avg']:.0f}, Rushing: {s['rushing_yards_avg']:.0f}, Hit Rate: {s['hit_rate_over']:.1%}")
+                st.write(f"• **{s['player']}** — Avg Passing: {s['passing_yards_avg']:.0f}, Rushing: {s['rushing_yards_avg']:.0f}")
         else:
             st.info("Historical data syncing — refresh in 1 min")
-
-if st.button("LIVE GAME PROPS (IN-GAME ONLY)"):
-    with st.spinner("Pulling live props..."):
-        # Default to first game for demo
-        game = get_upcoming_games()[0] if get_upcoming_games() else None
-        if game:
-            live_props = get_live_player_props(game["GameKey"])
-            if live_props:
-                st.subheader("Live Game Props (In-Game Updates)")
-                for p in live_props:
-                    st.write(f"• **{p['player']}** — {p['prop']} @ **{p['odds']}** ({p['book']})")
-            else:
-                st.info("No live games — check during Sunday games")
-        else:
-            st.info("No games for live props")
